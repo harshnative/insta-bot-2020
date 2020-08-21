@@ -6,7 +6,31 @@ import os
 
 import json
 
+from threading import Thread
 
+
+# time left loading animation thread
+timeForAn = 0
+
+class LoadingAnimation(Thread):
+
+    def run(self):
+        global timeForAn
+        time = timeForAn
+
+        print("\n")
+        
+        while(time):
+            sleep(1)
+            print("\rtime left = {} secs".format(time) , end = "")
+
+            if(time <= 1):
+                print("\ngetting things done please wait ..\n")
+            time -= 1
+
+
+
+# main class
 class InstaBot:
 
     def getBrowserOfChoice(self):
@@ -166,6 +190,8 @@ class InstaBot:
 
     def __init__(self):
 
+        self.NonFollowers = 0
+
         # output file path 
         self.outputFilePath = "NonFollowers.txt"
 
@@ -235,13 +261,25 @@ class InstaBot:
         numberOfFollowers = self.driver.find_element_by_xpath("//a[contains(@href,'/{}')]".format(stringToPass))
         numberOfFollowers = numberOfFollowers.text
         tempList = numberOfFollowers.split()
+        string = ""
         for i in tempList:
             try:
-                numberOfFollowers = int(i)
+                for j in i:
+                    if(not(j == ",")):
+                        string = string + j
+                numberOfFollowers = int(string)
             except Exception:
                 pass
+        
 
-        print("this process will take {} secs or more".format(numberOfFollowers/2))
+        print("this process will take {} secs or more".format(numberOfFollowers/6))
+
+        # starting time left animation
+        timeLeftAn = LoadingAnimation()
+
+        global timeForAn 
+        timeForAn = (int(numberOfFollowers/6))
+        timeLeftAn.start()
 
         # click on followers
         self.driver.find_element_by_xpath("//a[contains(@href,'/{}')]".format(stringToPass)).click()
@@ -252,15 +290,10 @@ class InstaBot:
         fBody  = self.driver.find_element_by_xpath("/html/body/div[4]/div/div/div[2]")
         scroll = 0
 
-        print("\nif you think all the followers are loaded , you can stop this process by pressing ctrl + c")
-
-        try:
-            while scroll < numberOfFollowers: 
-                self.driver.execute_script('arguments[0].scrollTop = arguments[0].scrollTop + arguments[0].offsetHeight;', fBody)
-                sleep(0.5)
-                scroll += 1
-        except KeyboardInterrupt:
-            pass
+        while scroll < int(numberOfFollowers/3): 
+            self.driver.execute_script('arguments[0].scrollTop = arguments[0].scrollTop + arguments[0].offsetHeight;', fBody)
+            sleep(0.5)
+            scroll += 1
 
         followers = []
         
@@ -276,6 +309,7 @@ class InstaBot:
         # closing popup
         self.driver.find_element_by_xpath("/html/body/div[4]/div/div/div[1]/div/div[2]/button").click()
         
+        timeLeftAn.join()
         return followers
 
 
@@ -285,18 +319,34 @@ class InstaBot:
         print("finding following\n")
 
         stringToPass = self.username + "/" + "following"
+        sleep(5)
 
         # getting number of following
         numberOfFollowing = self.driver.find_element_by_xpath("//a[contains(@href,'/{}')]".format(stringToPass))
         numberOfFollowing = numberOfFollowing.text
+
         tempList = numberOfFollowing.split()
+
+        string = ""
         for i in tempList:
             try:
-                numberOfFollowing = int(i)
+                for j in i:
+                    if(not(j == ",")):
+                        string = string + j
+                numberOfFollowing = int(string)
             except Exception:
                 pass
 
-        print("this process will take {} secs or more".format(numberOfFollowing/2))
+
+        print("this process will take {} secs or more".format(numberOfFollowing/6))
+
+        # starting time left animation
+        timeLeftAn = LoadingAnimation()
+
+        global timeForAn 
+        timeForAn = (int(numberOfFollowing/6))
+
+        timeLeftAn.start()
 
         # click on following
         self.driver.find_element_by_xpath("//a[contains(@href,'/{}')]".format(stringToPass)).click()
@@ -307,15 +357,12 @@ class InstaBot:
         fBody  = self.driver.find_element_by_xpath("/html/body/div[4]/div/div/div[2]")
         scroll = 0
 
-        print("\nif you think all the non followers are loaded , you can stop this process by pressing ctrl + c")
 
-        try:
-            while scroll < numberOfFollowing: 
-                self.driver.execute_script('arguments[0].scrollTop = arguments[0].scrollTop + arguments[0].offsetHeight;', fBody)
-                sleep(0.5)
-                scroll += 1
-        except KeyboardInterrupt:
-            pass
+        
+        while scroll < int(numberOfFollowing/3): 
+            self.driver.execute_script('arguments[0].scrollTop = arguments[0].scrollTop + arguments[0].offsetHeight;', fBody)
+            sleep(0.5)
+            scroll += 1
 
         following = []
         
@@ -328,9 +375,8 @@ class InstaBot:
         for i in tempFollowing:
             following.append(str(i.text))
 
-        # closing popup
-        self.driver.find_element_by_xpath("/html/body/div[4]/div/div/div[1]/div/div[2]/button").click()
-        
+
+        timeLeftAn.join()
         return following
         
     
@@ -341,22 +387,40 @@ class InstaBot:
 
         nonFollowersCount = 0
 
+        os.system('cls' if os.name == 'nt' else 'clear')
+        print("calculating non followers")
+
         with open(self.outputFilePath , "w") as fili:
             for i in following:
                 if(i not in followers):
                     nonFollowersCount += 1
                     fili.write(i)
-                    fili.write("\n\n")
+                    fili.write("\n")
 
+            self.NonFollowers = nonFollowersCount
             fili.write("\n\nNumber of people who are not following you = {}".format(nonFollowersCount))
 
 
-        print("\nNon Followers as been ouputted to same NonFollowers.txt present in same folder")
+        print("\nNon Followers as been ouputted to NonFollowers.txt present in same folder")
+
+        input("\n\npress enter to continue")
+        
+
 
 
 
 
 if __name__ == "__main__":
     
-    i = InstaBot()
-    i.getUnFollowers()
+    try:
+        print("please do not close the pop up browser")
+        input("\n\npress enter to continue ...")
+        i = InstaBot()
+        i.getUnFollowers()
+    except Exception as e:
+        print("make sure you are connected to the internet or using any of the following browser")
+        print("\nChrome 84 or firefox version 79")
+        
+        print("\n\nfor dev = {}".format(e))
+
+        input("\n\npress enter to continue ...")
