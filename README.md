@@ -8,7 +8,7 @@ make sure you are running chrome version 84 or firefox version 79
 
 # download
 
-you can download the exe file from the releases section
+[you can download it from here ](https://drive.google.com/uc?export=download&id=1epVSqOj_QMyi4pFb-OtSlKEU-OjB782y) or run the code directly using python
 
 # how to use
 
