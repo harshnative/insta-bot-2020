@@ -35,6 +35,8 @@ class InstaBot:
 
     def getBrowserOfChoice(self):
 
+        os.system('cls' if os.name == 'nt' else 'clear')
+
         try:
             # opening settings file 
             with open(self.path) as fil:
@@ -197,7 +199,7 @@ class InstaBot:
 
 
         # settings file path
-        self.path = "mySettings.json"
+        self.path = "settings.json"
 
         # getting user name and pass and assigning
         listElement = self.userNameAndPass()
