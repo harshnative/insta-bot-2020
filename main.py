@@ -166,6 +166,10 @@ class InstaBot:
 
     def __init__(self):
 
+        # output file path 
+        self.outputFilePath = "NonFollowers.txt"
+
+
         # settings file path
         self.path = "mySettings.json"
 
@@ -176,101 +180,183 @@ class InstaBot:
 
         # setting browser driver
         returnBrowser = self.getBrowserOfChoice()
-        if(returnBrowser == 1):
+        if(returnBrowser == 2):
             self.driver = webdriver.Firefox()
-        elif(returnBrowser == 2):
+        elif(returnBrowser == 1):
             self.driver = webdriver.Chrome()
 
 
     def loginInInsta(self):
+
+        os.system('cls' if os.name == 'nt' else 'clear')
+        print("logging into instagram , this process will take 30 seconds or more")
+
+        # getting to site 
         self.driver.get("https://instagram.com")
         sleep(5)
 
+        # filling details
         self.driver.find_element_by_xpath(
             "//input[@name=\"username\"]").send_keys(self.username)
         self.driver.find_element_by_xpath(
             "//input[@name=\"password\"]").send_keys(self.password)
 
+        # clicking submit
         self.driver.find_element_by_xpath('//button[@type="submit"]').click()
         sleep(5)
 
-        self.driver.find_element_by_xpath("//button[contains(text(), 'Not Now')]")\
-            .click()
+        # clicking not now for save login info
+        try:
+            self.driver.find_element_by_xpath("//button[contains(text(), 'Not Now')]").click()
+            sleep(5)
+        except Exception:
+            pass
+        
+        # clicking not now on insta
+        try:
+            self.driver.find_element_by_xpath("//button[contains(text(), 'Not Now')]").click()
+            sleep(5)
+        except Exception:
+            pass
+
+        # going to my username
+        self.driver.find_element_by_xpath("//a[contains(@href,'/{}')]".format(self.username)).click()
+        sleep(5)
 
     
-        
+    def getFollowers(self):
+
+        os.system('cls' if os.name == 'nt' else 'clear')
+        print("finding followers\n")
+
+        stringToPass = self.username + "/" + "followers"
+
+        # getting number of followers
+        numberOfFollowers = self.driver.find_element_by_xpath("//a[contains(@href,'/{}')]".format(stringToPass))
+        numberOfFollowers = numberOfFollowers.text
+        tempList = numberOfFollowers.split()
+        for i in tempList:
+            try:
+                numberOfFollowers = int(i)
+            except Exception:
+                pass
+
+        print("this process will take {} secs or more".format(numberOfFollowers/2))
+
+        # click on followers
+        self.driver.find_element_by_xpath("//a[contains(@href,'/{}')]".format(stringToPass)).click()
+        sleep(5)
 
         
+        # scrolling
+        fBody  = self.driver.find_element_by_xpath("/html/body/div[4]/div/div/div[2]")
+        scroll = 0
 
-        # os.system("cls")
-        # input("press enter after opening followers tab and loading all")
-        # input("\nagain press enter to continue")
+        print("\nif you think all the followers are loaded , you can stop this process by pressing ctrl + c")
 
-        # os.system("cls")
+        try:
+            while scroll < numberOfFollowers: 
+                self.driver.execute_script('arguments[0].scrollTop = arguments[0].scrollTop + arguments[0].offsetHeight;', fBody)
+                sleep(0.5)
+                scroll += 1
+        except KeyboardInterrupt:
+            pass
+
+        followers = []
         
-
-        # # finding followers
-        # followers = []
-        # print("finding followers ...")
-        # tempFollowers = self.driver.find_elements_by_class_name("_0imsa ")
+        tempFollowers = self.driver.find_elements_by_class_name("_0imsa")
         
-        # print("\ntotal followers found = {}".format(len(tempFollowers)))
+        print("\ntotal followers found = {}".format(len(tempFollowers)))
 
 
-        # print("converting Followers Found")
-        # for i in tempFollowers:
-        #     followers.append(str(i.text))
+        print("\nconverting Followers Found")
+        for i in tempFollowers:
+            followers.append(str(i.text))
 
-        # os.system("pause")
-        # os.system("cls")
-
-
-        # # finding following 
-        # following = []
-        # input("press enter after opening following tab and loading all")
-        # input("\nagain press enter to continue")
-
-        # os.system("cls")
-
-        # print("finding following...")
-        # tempFollowing = self.driver.find_elements_by_class_name("_0imsa ")
-
-        # print("\ntotal following found = {}".format(len(tempFollowing)))
-
-        # print("converting following Found")
-
-        # for i in tempFollowing:
-        #     following.append(str(i.text))
-
-        # notFollowed = 0
-
-        # os.system("cls")
-        # for i in following:
-        #     if(not(i in followers)):
-        #         print(i)
-        #         notFollowed += 1
-
-        # print("\nPeople who have not folloed  = {}\n\n".format(notFollowed))
-
-        # os.system("pause")
-
-        # print("script will end in 30 sec")
-
-        # os.system("cls")
-        # sleep(30)
+        # closing popup
+        self.driver.find_element_by_xpath("/html/body/div[4]/div/div/div[1]/div/div[2]/button").click()
+        
+        return followers
 
 
+    def getFollowing(self):
+
+        os.system('cls' if os.name == 'nt' else 'clear')
+        print("finding following\n")
+
+        stringToPass = self.username + "/" + "following"
+
+        # getting number of following
+        numberOfFollowing = self.driver.find_element_by_xpath("//a[contains(@href,'/{}')]".format(stringToPass))
+        numberOfFollowing = numberOfFollowing.text
+        tempList = numberOfFollowing.split()
+        for i in tempList:
+            try:
+                numberOfFollowing = int(i)
+            except Exception:
+                pass
+
+        print("this process will take {} secs or more".format(numberOfFollowing/2))
+
+        # click on following
+        self.driver.find_element_by_xpath("//a[contains(@href,'/{}')]".format(stringToPass)).click()
+        sleep(5)
+
+        
+        # scrolling
+        fBody  = self.driver.find_element_by_xpath("/html/body/div[4]/div/div/div[2]")
+        scroll = 0
+
+        print("\nif you think all the non followers are loaded , you can stop this process by pressing ctrl + c")
+
+        try:
+            while scroll < numberOfFollowing: 
+                self.driver.execute_script('arguments[0].scrollTop = arguments[0].scrollTop + arguments[0].offsetHeight;', fBody)
+                sleep(0.5)
+                scroll += 1
+        except KeyboardInterrupt:
+            pass
+
+        following = []
+        
+        tempFollowing = self.driver.find_elements_by_class_name("_0imsa")
+        
+        print("\ntotal following found = {}".format(len(tempFollowing)))
 
 
-                
+        print("\nconverting following Found")
+        for i in tempFollowing:
+            following.append(str(i.text))
+
+        # closing popup
+        self.driver.find_element_by_xpath("/html/body/div[4]/div/div/div[1]/div/div[2]/button").click()
+        
+        return following
+        
+    
+    def getUnFollowers(self):
+        self.loginInInsta()
+        followers = self.getFollowers()
+        following = self.getFollowing()
+
+        nonFollowersCount = 0
+
+        with open(self.outputFilePath , "w") as fili:
+            for i in following:
+                if(i not in followers):
+                    nonFollowersCount += 1
+                    fili.write(i)
+                    fili.write("\n\n")
+
+            fili.write("\n\nNumber of people who are not following you = {}".format(nonFollowersCount))
 
 
+        print("\nNon Followers as been ouputted to same NonFollowers.txt present in same folder")
 
 
 
 
 if __name__ == "__main__":
-    print(getBrowserOfChoice())
-
-
-
+    
+    i = InstaBot()
+    i.getUnFollowers()
